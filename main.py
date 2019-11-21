@@ -11,6 +11,12 @@ SCREEN = pygame.display.set_mode((width, height))
 SCREEN.fill((0,0,0))
 pygame.display.update()
 
+#BasicColors
+BasicRed = (255, 0, 0)
+BasicGreen = (0, 255, 0)
+BasicBlue = (0, 0, 255)
+BasicYellow = (255, 255, 0)
+
 #player
 x = 200
 y = 300
@@ -23,6 +29,12 @@ SquareSizeY = 50
 BaseOffset = 75
 BaseSizeX = 150
 BaseSizeY = 20
+
+#DoorInfo
+DoorColors = (BasicBlue, BasicGreen, BasicYellow, BasicRed) #L, R, U, D
+DoorLeft = (0, 0, 40, height) #x, y, SizeX, SizeY
+DoorRight = (width - 40, 0, 40, height)
+
 
 run = True
 #this is our game loop
@@ -62,6 +74,9 @@ while run:
     pygame.draw.circle(SCREEN, (255,0,0), (x,y), radius)
     pygame.draw.rect(SCREEN, (150, 150, 150), (x - (SquareSizeX/2), y - SquareHatOffset, SquareSizeX, SquareSizeY))
     pygame.draw.rect(SCREEN, (150, 150, 150), (x - (BaseSizeX/2), y - BaseOffset, BaseSizeX, BaseSizeY))
+    #Doors L, R, U, D
+    pygame.draw.rect(SCREEN, DoorColors[0], (DoorLeft[0], DoorLeft[1], DoorLeft[2], DoorLeft[3]))
+    pygame.draw.rect(SCREEN, DoorColors[1], (DoorRight[0], DoorRight[1], DoorRight[2], DoorRight[3]))
     pygame.display.update()
     
 
