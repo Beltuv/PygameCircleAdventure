@@ -1,5 +1,6 @@
 import pygame
 import time
+import random
 
 pygame.init()
 time.sleep(1)
@@ -30,10 +31,24 @@ BaseOffset = 75
 BaseSizeX = 150
 BaseSizeY = 20
 
+#Background
+BackRed = 0
+BackGreen = 0
+BackBlue = 0
+
+DanceFloorDelay = 5 #Change this to change the rate of change of the dance floor.
+CurrentDanceDelay = 0
+
 #DoorInfo
+CommonDoorWidth = 40
+DoorTeleportSpacing = 10
 DoorColors = (BasicBlue, BasicGreen, BasicYellow, BasicRed) #L, R, U, D
-DoorLeft = (0, 0, 40, height) #x, y, SizeX, SizeY
-DoorRight = (width - 40, 0, 40, height)
+DoorLeft = (0, 0, CommonDoorWidth, height) #x, y, SizeX, SizeY
+DoorRight = (width - CommonDoorWidth, 0, CommonDoorWidth, height)
+
+#Room
+Rooms = ("Spawn", "DanceFloor")
+CurrentRoom = "Spawn" #Default
 
 
 run = True
@@ -44,6 +59,7 @@ while run:
         if events.type == pygame.QUIT:
             run = False
             
+    #Input
     keyPress = pygame.key.get_pressed()
     
     if keyPress[pygame.K_ESCAPE]:
@@ -69,8 +85,33 @@ while run:
         if x > width - radius:
             x = width - radius
         
+    #State Checks
+    if x < (CommonDoorWidth + radius): #Left
+        if CurrentRoom == Rooms[0]:
+            CurrentRoom = Rooms[1]
+            x = width - (CommonDoorWidth + radius + DoorTeleportSpacing)
+            
+            
+    if x > (width - (CommonDoorWidth + radius)): #height
+        if CurrentRoom == Rooms[1]:
+            CurrentRoom = Rooms[0]
+            x = CommonDoorWidth + radius + DoorTeleportSpacing
+            
     #Draw Functions
-    SCREEN.fill((0,0,0))
+        
+    #Background
+    SCREEN.fill((0, 0, 0)) #Default Room Colour
+    if CurrentRoom == Rooms[1]:
+        if CurrentDanceDelay >= DanceFloorDelay:
+            BackRed = random.randint(1, 255)
+            BackGreen = random.randint(1, 255)
+            BackBlue = random.randint(1, 255)
+            CurrentDanceDelay = 0
+        else:
+            CurrentDanceDelay = CurrentDanceDelay + 1
+        SCREEN.fill((BackRed, BackGreen, BackBlue))
+    
+    
     pygame.draw.circle(SCREEN, (255,0,0), (x,y), radius)
     pygame.draw.rect(SCREEN, (150, 150, 150), (x - (SquareSizeX/2), y - SquareHatOffset, SquareSizeX, SquareSizeY))
     pygame.draw.rect(SCREEN, (150, 150, 150), (x - (BaseSizeX/2), y - BaseOffset, BaseSizeX, BaseSizeY))
