@@ -42,12 +42,12 @@ CurrentDanceDelay = 0
 #DoorInfo
 CommonDoorWidth = 40
 DoorTeleportSpacing = 10
-DoorColors = (BasicBlue, BasicGreen, BasicYellow, BasicRed) #L, R, U, D
+DoorColors = [BasicBlue, BasicGreen, BasicYellow, BasicRed] #L, R, U, D
 DoorLeft = (0, 0, CommonDoorWidth, height) #x, y, SizeX, SizeY
 DoorRight = (width - CommonDoorWidth, 0, CommonDoorWidth, height)
 
 #Room
-Rooms = ("Spawn", "DanceFloor")
+Rooms = ("Spawn", "DanceFloor", "Store") #Choice of names can be anything.
 CurrentRoom = "Spawn" #Default
 
 
@@ -89,12 +89,26 @@ while run:
     if x < (CommonDoorWidth + radius): #Left
         if CurrentRoom == Rooms[0]:
             CurrentRoom = Rooms[1]
+            DoorColors[0] = BasicYellow
+            DoorColors[1] = BasicBlue
+            x = width - (CommonDoorWidth + radius + DoorTeleportSpacing)
+        elif CurrentRoom == Rooms[2]:
+            CurrentRoom = Rooms[0]
+            DoorColors[0] = BasicBlue
+            DoorColors[1] = BasicGreen
             x = width - (CommonDoorWidth + radius + DoorTeleportSpacing)
             
             
     if x > (width - (CommonDoorWidth + radius)): #height
         if CurrentRoom == Rooms[1]:
             CurrentRoom = Rooms[0]
+            DoorColors[0] = BasicBlue
+            DoorColors[1] = BasicGreen
+            x = CommonDoorWidth + radius + DoorTeleportSpacing
+        elif CurrentRoom == Rooms[0]:
+            CurrentRoom = Rooms[2]
+            DoorColors[0] = BasicGreen
+            DoorColors[1] = BasicRed
             x = CommonDoorWidth + radius + DoorTeleportSpacing
             
     #Draw Functions
