@@ -1,0 +1,424 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Oct 24 16:23:31 2019
+
+@author: ryanbrazeal
+"""
+
+import pygame
+import time
+import random
+
+
+pygame.init()
+time.sleep(1)
+
+width = 500
+height = 615
+border = 75
+
+SCREEN = pygame.display.set_mode((width,height))
+SCREEN.fill((0,0,0))
+pygame.display.update()
+
+soldier_x = width // 2
+soldier_y = 505
+
+soldier_walk_right = [pygame.image.load("sprites/Soldier/Poses/soldier_walk1.png"),
+                                     pygame.image.load("sprites/Soldier/Poses/soldier_walk2.png")]
+
+soldier_walk_left = [pygame.transform.flip(pygame.image.load("sprites/Soldier/Poses/soldier_walk1.png"),True,False),
+                                   pygame.transform.flip(pygame.image.load("sprites/Soldier/Poses/soldier_walk2.png"),True,False)]
+
+soldier_climb = [pygame.image.load("sprites/Soldier/Poses/soldier_climb1.png"),
+                            pygame.image.load("sprites/Soldier/Poses/soldier_climb2.png")]
+
+soldier_cheer = [pygame.image.load("sprites/Soldier/Poses/soldier_cheer1.png"),
+                            pygame.image.load("sprites/Soldier/Poses/soldier_cheer2.png")]
+
+zombie_walk_right = [pygame.image.load("sprites/Zombie/Poses/zombie_walk1.png"),
+                                   pygame.image.load("sprites/Zombie/Poses/zombie_walk2.png")]
+
+zombie_walk_left = [pygame.transform.flip(pygame.image.load("sprites/Zombie/Poses/zombie_walk1.png"),True,False),
+                                 pygame.transform.flip(pygame.image.load("sprites/Zombie/Poses/zombie_walk2.png"),True,False)]
+
+ladder = pygame.transform.scale(pygame.image.load("sprites/ladder.png"),(100,100))
+
+health = [pygame.transform.scale(pygame.image.load("sprites/health_bar0.png"),(100,20)),
+               pygame.transform.scale(pygame.image.load("sprites/health_bar1.png"),(100,20)),
+               pygame.transform.scale(pygame.image.load("sprites/health_bar2.png"),(100,20)),
+               pygame.transform.scale(pygame.image.load("sprites/health_bar3.png"),(100,20))]
+
+game_over = pygame.transform.scale(pygame.image.load("sprites/game_over.png"),(300,300))
+
+zombies = []
+
+ladders = []
+ladders.append([ladder,[50,115]])
+ladders.append([ladder,[350,215]])
+ladders.append([ladder,[200,315]])
+ladders.append([ladder,[400,415]])
+ladders.append([ladder,[100,515]])
+ladder_size = ladder.get_bounding_rect()
+
+rect_colour = (255,0,0)
+ladders_rect = []
+for i in range(0,len(ladders)):
+    ladders_rect.append(pygame.Rect(ladders[i][1][0]+37,ladders[i][1][1]-3,ladder_size.width-30,ladder_size.height-43))
+
+ledge_colour = (127,127,127)
+ledges = []
+ledges.append([ledge_colour, (0,108,width,10)])
+ledges.append([ledge_colour, (0,208,width,10)])
+ledges.append([ledge_colour, (0,308,width,10)])
+ledges.append([ledge_colour, (0,408,width,10)])
+ledges.append([ledge_colour, (0,508,width,10)])
+
+treasure = pygame.transform.scale(pygame.image.load("sprites/treasure.png"),(30,45))
+treasure_rect = pygame.Rect(width/2-25,5,30,45)
+
+soldier_index = 0
+soldier_image = soldier_walk_right
+soldier_last_state = 2
+soldier_size = soldier_walk_right[0].get_bounding_rect()
+
+zombie_size = zombie_walk_right[0].get_bounding_rect()
+
+canGetHurt = True
+health_index = 3
+
+loopCount = 0
+loopCount2 = 0
+
+flicker = 1
+gameOver = False
+
+run = True
+run2 = False
+#this is our game loop
+while run:
+
+    loopCount = loopCount + 1
+    loopCount2 = loopCount2 + 1
+    
+    if soldier_last_state == 1:
+        soldier_rect = pygame.Rect(soldier_x+30,soldier_y+11,soldier_size.width-60,soldier_size.height)
+    elif soldier_last_state == 2:
+        soldier_rect = pygame.Rect(soldier_x+30,soldier_y+35,soldier_size.width-60,soldier_size.height-20)
+    elif soldier_last_state == 3:
+        soldier_rect = pygame.Rect(soldier_x+30,soldier_y+64,soldier_size.width-60,soldier_size.height-47)
+    else:  #soldier_last_state == 4
+        soldier_rect = pygame.Rect(soldier_x+30,soldier_y+35,soldier_size.width-60,soldier_size.height-20)
+
+#    print(soldier_rect)
+    
+    
+    pygame.time.delay(50)
+    for events in pygame.event.get():
+        if events.type == pygame.QUIT:
+            run = False
+            
+    keyPress = pygame.key.get_pressed()
+    
+    
+    if keyPress[pygame.K_ESCAPE]:
+        run = False
+        
+        
+    if keyPress[pygame.K_w]:
+        soldier_last_state = 1
+        touchingLadder = False
+        for i in range(0,len(ladders_rect)):
+            if soldier_rect.colliderect(ladders_rect[i]):
+                touchingLadder = True
+                break
+            
+        if touchingLadder:    
+            soldier_image = soldier_climb
+            soldier_index = soldier_index + 1
+            if soldier_index > 1:
+                soldier_index = 0
+            
+            soldier_y = soldier_y - 5
+            if soldier_y < -15:
+                soldier_y = -15
+    
+    
+    if keyPress[pygame.K_s]:
+        soldier_last_state = 3
+        touchingLadder = False
+        for i in range(0,len(ladders_rect)):
+            if soldier_rect.colliderect(ladders_rect[i]):
+                touchingLadder = True
+                break
+            
+        if touchingLadder:
+            soldier_image = soldier_climb
+            soldier_index = soldier_index - 1
+            if soldier_index < 0:
+                soldier_index = 1
+                
+            soldier_y = soldier_y + 5
+            if soldier_y > 505:
+                soldier_y = 505
+        
+        
+    if keyPress[pygame.K_a]:
+        soldier_last_state = 4
+        soldier_image = soldier_walk_left
+        soldier_index = soldier_index + 1
+        if soldier_index > 1:
+            soldier_index = 0
+        
+        soldier_x = soldier_x - 10
+        if soldier_x < 0:
+            soldier_x = 0
+            
+            
+    if keyPress[pygame.K_d]:
+        soldier_last_state = 2
+        soldier_image = soldier_walk_right
+        soldier_index = soldier_index - 1
+        if soldier_index < 0:
+            soldier_index = 1
+        
+        soldier_x = soldier_x + 10
+        if soldier_x > width - border:
+            soldier_x = width - border
+    
+        
+    SCREEN.fill((0,0,0))
+    
+    SCREEN.blit(health[health_index],(width-102,2))
+    
+    for i in range(0,len(ledges)):
+        pygame.draw.rect(SCREEN, ledges[i][0], ledges[i][1])
+    
+    for i in range(0,len(ladders)):
+        SCREEN.blit(ladders[i][0], ladders[i][1])
+    
+    if loopCount2 == 60:
+        loopCount2 = 0
+        canGetHurt = True
+        flicker = 1
+    
+    if loopCount == 100:
+        loopCount = 0
+        zombie_index = 0
+        zombie_x = random.randint(0,width)
+        zombie_y = random.randint(1,4) * 100
+        zombie_speed = random.randint(3,16)
+        zombie_dir = random.randint(1,10)
+        if zombie_dir % 2 == 0:
+            zombie_dir = -1
+            zombie_image = zombie_walk_left
+        else:
+            zombie_dir = 1
+            zombie_image = zombie_walk_right
+        zombies.append([zombie_index, zombie_image, zombie_x, zombie_y, zombie_speed, zombie_dir])
+        
+        if gameOver:
+            zombies = []
+            soldier_x = width // 2
+            soldier_y = 505
+            soldier_image = soldier_walk_right
+            soldier_index = 0
+            canGetHurt = True
+            health_index = 3                    
+            loopCount = 0
+            loopCount2 = 0
+            flicker = 1
+            gameOver = False
+        
+    for i in range(0,len(zombies)):
+        zombie_rect = pygame.Rect(zombies[i][2],zombies[i][3]+25,zombie_size.width,zombie_size.height-20)
+        
+        SCREEN.blit(zombies[i][1][zombies[i][0]], [zombies[i][2],zombies[i][3]])         #zombie_image[zombie_index], [zombie_x,zombie_y])
+    
+#        zombie_x = zombie_x + zombie_dir * zombie_speed
+        zombies[i][2] = zombies[i][2] + zombies[i][5] * zombies[i][4]
+        if zombies[i][2] < 0:
+            zombies[i][5] = 1
+            zombies[i][1] = zombie_walk_right
+        if zombies[i][2] > width:
+            zombies[i][5] = -1
+            zombies[i][1] = zombie_walk_left
+        if zombies[i][0] == 0:
+            zombies[i][0] = 1
+        elif zombies[i][0] == 1:
+            zombies[i][0] = 0
+            
+        if soldier_rect.colliderect(zombie_rect):
+            if canGetHurt == True:
+                flicker = 2
+                canGetHurt = False
+                time.sleep(0.01)
+                health_index -= 1
+                
+                #game_over and reset game
+                if health_index == -1:
+                    gameOver = True
+                    health_index = 0
+                    loopCount = 40
+                    
+                    
+#        pygame.draw.rect(SCREEN, rect_colour, zombie_rect)
+                
+    
+    pygame.draw.rect(SCREEN, ledge_colour, (width/2-35,48,50,5))
+    SCREEN.blit(treasure, [width/2-25,5])
+    
+    if loopCount % flicker == 0:
+        SCREEN.blit(soldier_image[soldier_index], [soldier_x,soldier_y])
+#        pygame.draw.rect(SCREEN, rect_colour, soldier_rect)
+    else:
+        if soldier_index == 0:
+            soldier_index = 1
+        elif soldier_index == 1:
+            soldier_index = 0
+            
+#    for i in range(0,len(ladders_rect)):
+#        pygame.draw.rect(SCREEN, rect_colour, ladders_rect[i])
+    
+    if soldier_rect.colliderect(treasure_rect):
+        soldier_image = soldier_cheer
+        soldier_index = loopCount % 2
+        run2 = True
+        run = False
+    
+    if gameOver == True:
+        SCREEN.blit(game_over, [100,150])
+    
+    pygame.display.update()
+   
+#Second Half
+
+SCREEN = pygame.display.set_mode((width, height))
+SCREEN.fill((0,0,0))
+pygame.display.update()
+
+#BasicColors
+BasicRed = (255, 0, 0)
+BasicGreen = (0, 255, 0)
+BasicBlue = (0, 0, 255)
+BasicYellow = (255, 255, 0)
+
+#player
+x = 200
+y = 300
+radius = 75
+
+#player customization (Little Square Top)
+SquareHatOffset = 110
+SquareSizeX = 100
+SquareSizeY = 50
+BaseOffset = 75
+BaseSizeX = 150
+BaseSizeY = 20
+
+#Background
+BackRed = 0
+BackGreen = 0
+BackBlue = 0
+
+DanceFloorDelay = 5 #Change this to change the rate of change of the dance floor.
+CurrentDanceDelay = 0
+
+#DoorInfo
+CommonDoorWidth = 40
+DoorTeleportSpacing = 10
+DoorColors = [BasicBlue, BasicGreen, BasicYellow, BasicRed] #L, R, U, D
+DoorLeft = (0, 0, CommonDoorWidth, height) #x, y, SizeX, SizeY
+DoorRight = (width - CommonDoorWidth, 0, CommonDoorWidth, height)
+
+#Room
+Rooms = ("Spawn", "DanceFloor", "Store") #Choice of names can be anything.
+CurrentRoom = "Spawn" #Default
+
+
+
+#this is our game loop
+while run2:
+    pygame.time.delay(50)
+    for events in pygame.event.get():
+        if events.type == pygame.QUIT:
+            run2 = False
+            
+    #Input
+    keyPress = pygame.key.get_pressed()
+    
+    if keyPress[pygame.K_ESCAPE]:
+        run2 = False
+        
+    if keyPress[pygame.K_w]:
+        y = y - 20
+        if y < (radius + (SquareHatOffset - radius)):
+            y = radius + (SquareHatOffset - radius)
+    
+    if keyPress[pygame.K_s]:
+        y = y + 20
+        if y > height - radius:
+            y = height - radius
+        
+    if keyPress[pygame.K_a]:
+        x = x - 20
+        if x < radius:
+            x = radius
+        
+    if keyPress[pygame.K_d]:
+        x = x + 20
+        if x > width - radius:
+            x = width - radius
+        
+    #State Checks
+    if x < (CommonDoorWidth + radius): #Left
+        if CurrentRoom == Rooms[0]:
+            CurrentRoom = Rooms[1]
+            DoorColors[0] = BasicYellow
+            DoorColors[1] = BasicBlue
+            x = width - (CommonDoorWidth + radius + DoorTeleportSpacing)
+        elif CurrentRoom == Rooms[2]:
+            CurrentRoom = Rooms[0]
+            DoorColors[0] = BasicBlue
+            DoorColors[1] = BasicGreen
+            x = width - (CommonDoorWidth + radius + DoorTeleportSpacing)
+            
+            
+    if x > (width - (CommonDoorWidth + radius)): #height
+        if CurrentRoom == Rooms[1]:
+            CurrentRoom = Rooms[0]
+            DoorColors[0] = BasicBlue
+            DoorColors[1] = BasicGreen
+            x = CommonDoorWidth + radius + DoorTeleportSpacing
+        elif CurrentRoom == Rooms[0]:
+            CurrentRoom = Rooms[2]
+            DoorColors[0] = BasicGreen
+            DoorColors[1] = BasicRed
+            x = CommonDoorWidth + radius + DoorTeleportSpacing
+            
+    #Draw Functions
+        
+    #Background
+    SCREEN.fill((0, 0, 0)) #Default Room Colour
+    if CurrentRoom == Rooms[1]:
+        if CurrentDanceDelay >= DanceFloorDelay:
+            BackRed = random.randint(1, 255)
+            BackGreen = random.randint(1, 255)
+            BackBlue = random.randint(1, 255)
+            CurrentDanceDelay = 0
+        else:
+            CurrentDanceDelay = CurrentDanceDelay + 1
+        SCREEN.fill((BackRed, BackGreen, BackBlue))
+    
+    
+    pygame.draw.circle(SCREEN, (255,0,0), (x,y), radius)
+    pygame.draw.rect(SCREEN, (150, 150, 150), (x - (SquareSizeX/2), y - SquareHatOffset, SquareSizeX, SquareSizeY))
+    pygame.draw.rect(SCREEN, (150, 150, 150), (x - (BaseSizeX/2), y - BaseOffset, BaseSizeX, BaseSizeY))
+    #Doors L, R, U, D
+    pygame.draw.rect(SCREEN, DoorColors[0], (DoorLeft[0], DoorLeft[1], DoorLeft[2], DoorLeft[3]))
+    pygame.draw.rect(SCREEN, DoorColors[1], (DoorRight[0], DoorRight[1], DoorRight[2], DoorRight[3]))
+    pygame.display.update()
+
+
+pygame.quit()
