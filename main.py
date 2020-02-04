@@ -5,8 +5,8 @@ import random
 pygame.init()
 time.sleep(1)
 
-height = 700
-width = 1200
+height = 600
+width = 800
 
 SCREEN = pygame.display.set_mode((width, height))
 SCREEN.fill((0,0,0))
@@ -22,6 +22,10 @@ BasicYellow = (255, 255, 0)
 x = 200
 y = 300
 radius = 75
+#PlayerColor
+PlayerRed = 255
+PlayerGreen = 0
+PlayerBlue = 0
 
 #player customization (Little Square Top)
 SquareHatOffset = 110
@@ -47,7 +51,7 @@ DoorLeft = (0, 0, CommonDoorWidth, height) #x, y, SizeX, SizeY
 DoorRight = (width - CommonDoorWidth, 0, CommonDoorWidth, height)
 
 #Room
-Rooms = ("Spawn", "DanceFloor", "Store") #Choice of names can be anything.
+Rooms = ("Spawn", "DanceFloor", "PlayerColorRoom") #Choice of names can be anything.
 CurrentRoom = "Spawn" #Default
 
 
@@ -125,8 +129,18 @@ while run:
             CurrentDanceDelay = CurrentDanceDelay + 1
         SCREEN.fill((BackRed, BackGreen, BackBlue))
     
-    
-    pygame.draw.circle(SCREEN, (255,0,0), (x,y), radius)
+    if CurrentRoom == Rooms[2]:
+      if CurrentDanceDelay >= DanceFloorDelay: #Reuse vars
+        PlayerRed = random.randint(1, 255)
+        PlayerGreen = random.randint(1, 255)
+        PlayerBlue = random.randint(1, 255)
+      else:
+        CurrentDanceDelay = CurrentDanceDelay + 1
+      pygame.draw.circle(SCREEN, (PlayerRed, PlayerGreen,PlayerBlue), (x,y), radius)
+    else:
+      pygame.draw.circle(SCREEN, (255,0,0), (x,y), radius)
+
+      
     pygame.draw.rect(SCREEN, (150, 150, 150), (x - (SquareSizeX/2), y - SquareHatOffset, SquareSizeX, SquareSizeY))
     pygame.draw.rect(SCREEN, (150, 150, 150), (x - (BaseSizeX/2), y - BaseOffset, BaseSizeX, BaseSizeY))
     #Doors L, R, U, D
